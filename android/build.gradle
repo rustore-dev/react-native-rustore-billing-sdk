@@ -3,6 +3,7 @@ buildscript {
   def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["RustoreBilling_kotlinVersion"]
 
   repositories {
+    mavenLocal()
     google()
     mavenCentral()
   }
@@ -61,9 +62,15 @@ android {
 
 }
 
-repositories {
-  mavenCentral()
-  google()
+rootProject.allprojects {
+    repositories {
+        mavenLocal()
+        maven {
+            url = uri("https://artifactory-external.vkpartner.ru/artifactory/maven")
+        }
+        google()
+        mavenCentral()
+    }
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
@@ -74,6 +81,7 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation "ru.rustore.sdk:billingclient:2.1.0"
 }
 
 if (isNewArchitectureEnabled()) {

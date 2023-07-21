@@ -1,18 +1,30 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-rustore-billing';
+import RustoreBillingClient from 'react-native-rustore-billing';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [result, setResult] = React.useState<any>();
 
   React.useEffect(() => {
-    multiply(3, 4).then(setResult);
+    RustoreBillingClient.initialize({
+      consoleApplicationId: 'test',
+      deeplinkScheme: 'test',
+    });
+    const asd = async () => {
+      try {
+        const s = await RustoreBillingClient.checkPurchasesAvailability();
+        setResult(s);
+      } catch (err) {
+        setResult(JSON.stringify(err));
+      }
+    };
+    asd();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>{result}</Text>
     </View>
   );
 }
