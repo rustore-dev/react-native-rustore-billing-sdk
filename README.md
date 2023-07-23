@@ -45,18 +45,17 @@ npm install react-native-rustore-billing
 
 ```ts
 try {
-  const result = await RustoreBillingClient.initialize(
-    "123456",
-    "yourappscheme://iamback",
-  );
+  RustoreBillingClient.initialize({
+    consoleApplicationId: 'appId',
+    deeplinkScheme: 'scheme',
+  });
   console.log(`initialize success: ${result}`);
 } catch (err) {
   console.log(`initialize err: ${err}`);
 }
 ```
-
-123456 - код приложения из консоли разработчика RuStore (пример: https://console.rustore.ru/apps/123456).
-yourappscheme://iamback - cхема deeplink, необходимая для возврата в ваше приложение после оплаты через стороннее приложение (например, SberPay или СБП). SDK генерирует свой хост к данной схеме.
+- `consoleApplicationId` - код приложения из консоли разработчика RuStore (пример: https://console.rustore.ru/apps/123456).
+- `deeplinkScheme` - cхема deeplink, необходимая для возврата в ваше приложение после оплаты через стороннее приложение (например, SberPay или СБП). SDK генерирует свой хост к данной схеме.
 Важно, чтобы схема deeplink, передаваемая в deeplinkScheme, совпадала со схемой, указанной в AndroidManifest.xml в разделе "Обработка deeplink".
 
 ## Проверка доступности работы с платежами
@@ -66,10 +65,11 @@ yourappscheme://iamback - cхема deeplink, необходимая для во
 - Пользователь должен быть авторизован в RuStore.
 - Пользователь и приложение не должны быть заблокированы в RuStore.
 - Для приложения должна быть включена возможность покупок в консоли разработчика RuStore.
-- Если все условия выполняются, метод `RustoreBillingClient.available()` возвращает значение true.
+- Если все условия выполняются, метод `RustoreBillingClient.checkPurchasesAvailability()` возвращает значение `true`.
+
 ```ts
 try {
-  const isAvailable = await RustoreBillingClient.available();
+  const isAvailable = await RustoreBillingClient.checkPurchasesAvailability();
   console.log(`available success ${isAvailable}`);
 } catch (err) {
   console.log(`available error ${err}`);
@@ -79,55 +79,26 @@ try {
 ## Работа с продуктами
 
 ### Получение списка продуктов
-Для получения продуктов необходимо использовать метод `RustoreBillingClient.products(ids)`:
+Для получения продуктов необходимо использовать метод `RustoreBillingClient.getProducts(ids)`:
+
 ```ts
 try {
-  const response = await RustoreBillingClient.products(ids);
-  for (const product of response.products) {
+  const products = await RustoreBillingClient.getProducts(ids);
+  for (const product of products) {
     console.log(product?.productId);
   }
 } catch (err) {
   console.log(`products err: ${err}`);
 }
 ```
-- `ids: Array<String>` - список идентификаторов продуктов.
+- `ids: String[]` - список идентификаторов продуктов.
 
-Метод возвращает `ProductsResponse`:
-```ts
-interface ProductsResponse {
-    code: number;
-    products?: Array<Product>;
-    errors?: Array<DigitalShopGeneralError>;
-    errorMessage?: string;
-    errorDescription?: string;
-    traceId?: string;
-}
-```
-- code - код ответа.
-- products - список продуктов.
-- errors - список ошибок.
-- errorMessage - сообщение об ошибке.
-- errorDescription - описание ошибки.
-- traceId - идентификатор ошибки.
-
-Интерфейс ошибки `DigitalShopGeneralError`:
-```ts
-interface DigitalShopGeneralError {
-    name?: string;
-    code?: number;
-    description?: string;
-}
-```
-- name - имя ошибки.
-- code - код ошибки.
-- description - описание ошибки.
-
-Интерфейс продукта `Product`:
+Метод возвращает `Product[]`:
 ```ts
 interface Product {
     productId: string;
-    productType?: string;
-    productStatus: string;
+    productType?: ProductType;
+    productStatus: ProductStatus;
     priceLabel?: string;
     price?: number;
     currency?: string;
@@ -136,39 +107,39 @@ interface Product {
     description?: string;
     imageUrl?: string;
     promoImageUrl?: string;
-    subscription?: Subscription;
+    subscription?: ProductSubscription;
 }
 ```
-- productId - идентификатор продукта.
-- productType - тип продукта.
-- productStatus - статус продукта.
-- priceLable - отформатированная цена товара, включая валютный знак на языке [language].
-- price - цена в минимальных единицах.
-- currency - код валюты ISO 4217.
-- language - язык, указанный с помощью BCP 47 кодирования.
-- title - название продукта на языке [language].
-- description - описание продукта на языке [language].
-- imageUrl - ссылка на картинку.
-- promoImageUrl - ссылка на промо картинку.
-- subscription - описание подписки, возвращается только для продуктов с типом subscription.
+- `productId` - идентификатор продукта.
+- `productType` - тип продукта.
+- `productStatus` - статус продукта.
+- `priceLabel` - отформатированная цена товара, включая валютный знак на языке [language].
+- `price` - цена в минимальных единицах.
+- `currency` - код валюты ISO 4217.
+- `language` - язык, указанный с помощью BCP 47 кодирования.
+- `title` - название продукта на языке [language].
+- `description` - описание продукта на языке [language].
+- `imageUrl` - ссылка на картинку.
+- `promoImageUrl` - ссылка на промо картинку.
+- `subscription` - описание подписки, возвращается только для продуктов с типом subscription.
 
 Интерфейс подписки `Subscription`:
 ```ts
-interface Subscription {
-    subscriptionPeriod?: SubscriptionPeriod;
-    freeTrialPeriod?: SubscriptionPeriod;
-    gracePeriod?: SubscriptionPeriod;
-    introductoryPrice?: string;
-    introductoryPriceAmount?: string;
-    introductoryPricePeriod?: SubscriptionPeriod;
+interface ProductSubscription {
+  subscriptionPeriod?: SubscriptionPeriod;
+  freeTrialPeriod?: SubscriptionPeriod;
+  gracePeriod?: SubscriptionPeriod;
+  introductoryPrice?: string;
+  introductoryPriceAmount?: string;
+  introductoryPricePeriod?: SubscriptionPeriod;
 }
 ```
-- subscriptionPeriod - период подписки.
-- freeTrialPeriod - пробный период подписки.
-- gracePeriod - льготный период подписки.
-- introductoryPrice - отформатированная вступительная цена подписки, включая знак валюты, на языке product:language.
-- introductoryPriceAmount - вступительная цена в минимальных единицах валюты (в копейках).
-- introductoryPricePeriod - расчетный период вступительной цены.
+- `subscriptionPeriod` - период подписки.
+- `freeTrialPeriod` - пробный период подписки.
+- `gracePeriod` - льготный период подписки.
+- `introductoryPrice` - отформатированная вступительная цена подписки, включая знак валюты, на языке product:language.
+- `introductoryPriceAmount` - вступительная цена в минимальных единицах валюты (в копейках).
+- `introductoryPricePeriod` - расчетный период вступительной цены.
 
 Интерфейс периода подписки `SubscriptionPeriod`:
 ```ts
@@ -178,55 +149,25 @@ interface SubscriptionPeriod {
     days: number;
 }
 ```
-- years - количество лет.
-- months - количество месяцев.
-- days - количество дней.
+- `years` - количество лет.
+- `months` - количество месяцев.
+- `days` - количество дней.
 
 ## Работа с покупками
 ### Получение списка покупок
-Для получения списка покупок необходимо использовать метод `RustoreBillingClient.purchases()`:
+Для получения списка покупок необходимо использовать метод `RustoreBillingClient.getPurchases()`:
 ```ts
 try {
-  const response = await RustoreBillingClient.purchases();
-  for (const product of response.purchases) {
-    console.log(product?.purchaseId);
+  const purchases = await RustoreBillingClient.getPurchases();
+  for (const purchase of purchases) {
+    console.log(purchase?.purchaseId);
   }
 } catch (err) {
   console.log(`purchase err: ${err}`);
 }
 ```
 
-Метод возвращает `PurchasesResponse`:
-```ts
-interface PurchasesResponse {
-    code: number;
-    errorMessage?: string;
-    errorDescription?: string;
-    traceId?: string;
-    purchases?: Array<Purchase>;
-    errors?: Array<DigitalShopGeneralError>;
-}
-```
-- code - код ответа.
-- errorMessage - сообщение об ошибке.
-- errorDescription - описание ошибки.
-- traceId - идентификатор ошибки.
-- errors - список ошибок.
-- purchases - список покупок.
-
-Интерфейс ошибки `DigitalShopGeneralError`:
-```ts
-interface DigitalShopGeneralError {
-    name?: string;
-    code?: number;
-    description?: string;
-}
-```
-- name - наименование ошибки.
-- code - код ошибки.
-- description - описание ошибки.
-
-Интерфейс покупки `Purchase`:
+Метод возвращает `Purchase[]`:
 ```ts
 interface Purchase {
     purchaseId?: string;
@@ -243,133 +184,146 @@ interface Purchase {
     developerPayload?: string;
 }
 ```
-- purchaseId - идентификатор покупки.
-- productId - идентификатор продукта.
-- description - описание покупки.
-- language - язык, указанный с помощью BCP 47 кодирования.
-- purchaseTime - время покупки (в формате RFC 3339).
-- orderId - уникальный идентификатор оплаты, сформированный приложением (uuid).
-- amountLable - отформатированная цена покупки, включая валютный знак на языке [language].
-- amount - цена в минимальных единицах валюты.
-- currency - код валюты ISO 4217.
-- quantity - количество продукта.
-- purchaseState - состояние покупки.
-  - CREATED - создана.
-  - INVOICE_CREATED - создана, ожидает оплаты.
-  - CONFIRMED - подтверждена.
-  - PAID - оплачена.
-  - CANCELLED - покупка отменена.
-  - CONSUMED - потребление покупки подтверждено.
-  - CLOSED - подписка была отменена.
-- developerPayload - указанная разработчиком строка, содержащая дополнительную информацию о заказе.
+- `purchaseId` - идентификатор покупки.
+- `productId` - идентификатор продукта.
+- `description` - описание покупки.
+- `language` - язык, указанный с помощью BCP 47 кодирования.
+- `purchaseTime` - время покупки (в формате RFC 3339).
+- `orderId` - уникальный идентификатор оплаты, сформированный приложением (uuid).
+- `amountLabel` - отформатированная цена покупки, включая валютный знак на языке [language].
+- `amount` - цена в минимальных единицах валюты.
+- `currency` - код валюты ISO 4217.
+- `quantity` - количество продукта.
+- `purchaseState` - состояние покупки.
+  - `CREATED` - создана.
+  - `INVOICE_CREATED` - создана, ожидает оплаты.
+  - `CONFIRMED` - подтверждена.
+  - `PAID` - оплачена.
+  - `CANCELLED` - покупка отменена.
+  - `CONSUMED` - потребление покупки подтверждено.
+  - `CLOSED` - подписка была отменена.
+  - `TERMINATED` - подписка больше не существует
+- `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию о заказе.
 
-### Покупка продукта
-Для вызова покупки продукта используйте метод `RustoreBillingClient.purchase(id)`:
+### Получение конкретной покупки
+Для получения конкретной покупки необходимо использовать метод `RustoreBillingClient.getPurchaseInfo(id)`:
 ```ts
 try {
-  const response = await RustoreBillingClient.purchase(id);
+  const purchase = await RustoreBillingClient.getPurchaseInfo('purchaseId');
+  console.log(purchase?.purchaseId);
+} catch (err) {
+  console.log(`purchase err: ${err}`);
+}
+```
+
+Метод возвращает `Purchase`, который описан выше.
+
+### Покупка продукта
+Для вызова покупки продукта используйте метод `RustoreBillingClient.purchaseProduct({...})`:
+```ts
+try {
+  const response = await RustoreBillingClient.purchaseProduct({
+    productId: 'productId',
+    orderId: 'orderId',
+    quantity: 0,
+    developerPayload: 'developerPayload'
+  });
   console.log(`purchase success: ${response}`);
 } catch (err) {
   console.log(`purchase err: ${err}`);
 }
 ```
-- id - идентификатор продукта.
+- `productId` - идентификатор продукта.
+- `orderId` - идентификатор заказа.
+- `quantity` - количество продуктов.
+- `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию.
 
-Интерфейс результата покупки PaymentResult:
+Интерфейсы результата покупки могут быть `SuccessPayment`, `CancelledPayment` или `FailurePayment`:
 ```ts
-interface PaymentResult {
-    successInvoice?: SuccessInvoice;
-    invalidInvoice?: InvalidInvoice;
-    successPurchase?: SuccessPurchase;
-    invalidPurchase?: InvalidPurchase;
+enum PaymentResultType {
+  SUCCESS = 'SUCCESS',
+  CANCELLED = 'CANCELLED',
+  FAILURE = 'FAILURE',
+}
+
+interface SuccessPaymentResult {
+  orderId?: string;
+  purchaseId?: string;
+  productId?: string;
+  invoiceId?: string;
+  subscriptionToken?: string;
+}
+
+interface SuccessPayment {
+  type: PaymentResultType.SUCCESS;
+  result: SuccessPaymentResult;
+}
+
+interface CancelledPaymentResult {
+  purchaseId?: string;
+}
+
+interface CancelledPayment {
+  type: PaymentResultType.CANCELLED;
+  result: CancelledPaymentResult;
+}
+
+interface FailurePaymentResult {
+  purchaseId?: string;
+  invoiceId?: string;
+  orderId?: string;
+  quantity?: number;
+  productId?: string;
+  errorCode?: number;
+}
+
+interface FailurePayment {
+  type: PaymentResultType.FAILURE;
+  result: FailurePaymentResult;
 }
 ```
-
-Интерфейс `SuccessInvoice`:
-```ts
-interface SuccessInvoice {
-    invoiceId: string;
-    finishCode: string;
-}
-```
-
-Интерфейс `InvalidInvoice`:
-```ts
-interface InvalidInvoice {
-    invoiceId?: string;
-}
-```
-
-Интерфейс `SuccessPurchase`:
-```ts
-interface SuccessPurchase {
-    finishCode: string;
-    orderId?: string;
-    purchaseId: string;
-    productId: string;
-}
-```
-
-Интерфейс `InvalidPurchase`:
-```ts
-interface InvalidPurchase {
-    purchaseId?: string;
-    invoiceId?: string;
-    orderId?: string;
-    quantity?: number;
-    productId?: string;
-    errorCode?: number;
-}
-```
-
-- `SuccessInvoice` - платежи завершились с результатом.
-- `InvalidInvoice` - платежи завершились без указания инвойса. Вероятно, они были запущены с некорректным инвойсом (пустая строка, например).
-- `SuccessPurchase` - результат успешного завершения покупки цифрового товара.
-- `InvalidPurchase` - при оплате цифрового товара платежи завершились c ошибкой.
-
-Возможные статусы, которые может содержать `finishCode`:
-- SUCCESSFUL_PAYMENT - успешная оплата.
-- CLOSED_BY_USER - отменено пользователем.
-- UNHANDLED_FORM_ERROR - неизвестная ошибка.
-- PAYMENT_TIMEOUT - ошибка оплаты по таймауту.
-- DECLINED_BY_SERVER - отклонено сервером.
-- RESULT_UNKNOWN - неизвестный статус оплаты.
+- `SuccessPayment` - результат успешного завершения покупки цифрового товара.
+- `CancelledPayment` - результат ошибки покупки цифрового товара.
+- `FailurePayment` - результат отмены покупки цифрового товара.
 
 ### Потребление (подтверждение) покупки
 RuStore содержит продукты следующих типов:
-- CONSUMABLE - потребляемый (можно купить много раз, например кристаллы в приложении).
-- NON_CONSUMABLE - непотребляемый (можно купить один раз, например отключение рекламы в приложении).
-- SUBSCRIPTION - подписка (можно купить на период времени, например подписка в стриминговом сервисе).
+- `CONSUMABLE` - потребляемый (можно купить много раз, например кристаллы в приложении).
+- `NON_CONSUMABLE` - непотребляемый (можно купить один раз, например отключение рекламы в приложении).
+- `SUBSCRIPTION` - подписка (можно купить на период времени, например подписка в стриминговом сервисе).
   Потребления требуют только продукты типа CONSUMABLE, если они находятся в состоянии PurchaseState.PAID.
 
-Для потребления покупки вы можете использовать метод `RustoreBillingClient.confirm(id)`:
+Для потребления покупки вы можете использовать метод `RustoreBillingClient.confirmPurchase({...})`:
 ```ts
 try {
-  const response = await RustoreBillingClient.confirm(id)
-  console.log(`confirm success: ${response}`);
+  const isConfirmed = await RustoreBillingClient.confirmPurchase({
+    purchaseId: 'purchaseId',
+    developerPayload: 'developerPayload'
+  })
+  console.log(`confirm success: ${isConfirmed}`);
 } catch (err) {
   console.log(`confirm err: ${err}`);
 }
 ```
-- id - идентификатор покупки.
+- `purchaseId` - идентификатор покупки.
+- `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию.
 
-Метод возвращает `ConfirmPurchaseResponse`:
+Если все условия выполняются, метод `RustoreBillingClient.confirmPurchase()` возвращает значение `true`.
+
+### Отмена покупки
+
+Для отмены покупки вы можете использовать метод `RustoreBillingClient.deletePurchase(id)`:
 ```ts
-interface ConfirmPurchaseResponse {
-    code: number;
-    errorMessage?: string;
-    errorDescription?: string;
-    traceId?: string;
-    errors?: Array<DigitalShopGeneralError>;
+try {
+  const isDeleted = await RustoreBillingClient.deletePurchase(id)
+  console.log(`delete success: ${isDeleted}`);
+} catch (err) {
+  console.log(`delete err: ${err}`);
 }
 ```
-- code - код ответа.
-- errorMessage - сообщение об ошибке для пользователя.
-- errorDescription - расшифровка сообщения об ошибке.
-- traceId - идентификатор ошибочного сообщения.
-- errors - список ошибок.
+- id - идентификатор покупки.
 
-Интерфейс ошибки `DigitalShopGeneralError` описан выше.
+Если все условия выполняются, метод `RustoreBillingClient.deletePurchase()` возвращает значение `true`.
 
 ## Тестовые данные
 [Ссылка](https://securepayments.sberbank.ru/wiki/doku.php/test_cards) на тестовые банковские карты.

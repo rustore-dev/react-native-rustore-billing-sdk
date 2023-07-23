@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import RustoreBillingClient from 'react-native-rustore-billing';
 
 export default function App() {
@@ -8,10 +8,11 @@ export default function App() {
 
   React.useEffect(() => {
     RustoreBillingClient.initialize({
-      consoleApplicationId: 'test',
+      consoleApplicationId: '183519',
       deeplinkScheme: 'test',
     });
-    const asd = async () => {
+
+    const asyncFunc = async () => {
       try {
         const s = await RustoreBillingClient.checkPurchasesAvailability();
         setResult(s);
@@ -19,7 +20,7 @@ export default function App() {
         setResult(JSON.stringify(err));
       }
     };
-    asd();
+    asyncFunc();
   }, []);
 
   return (

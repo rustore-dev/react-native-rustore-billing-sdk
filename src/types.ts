@@ -1,23 +1,15 @@
 // Работа с продуктами
 
-export interface ProductsResponse {
-  code: number;
-  products?: Array<Product>;
-  errors?: Array<DigitalShopGeneralError>;
-  errorMessage?: string;
-  errorDescription?: string;
-  traceId?: string;
+export enum ProductType {
+  NON_CONSUMABLE = 'NON_CONSUMABLE',
+  CONSUMABLE = 'CONSUMABLE',
+  SUBSCRIPTION = 'SUBSCRIPTION',
 }
 
-export interface DigitalShopGeneralError {
-  name?: string;
-  code?: number;
-  description?: string;
+export enum ProductStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
 }
-
-export enum ProductType {}
-
-export enum ProductStatus {}
 
 export interface Product {
   productId: string;
@@ -51,15 +43,6 @@ export interface SubscriptionPeriod {
 
 // Работа с покупками
 
-export interface PurchasesResponse {
-  code: number;
-  errorMessage?: string;
-  errorDescription?: string;
-  traceId?: string;
-  purchases?: Array<Purchase>;
-  errors?: Array<DigitalShopGeneralError>;
-}
-
 export enum PurchaseState {
   CREATED = 'CREATED',
   INVOICE_CREATED = 'INVOICE_CREATED',
@@ -68,6 +51,7 @@ export enum PurchaseState {
   CANCELLED = 'CANCELLED',
   CONSUMED = 'CONSUMED',
   CLOSED = 'CLOSED',
+  TERMINATED = 'TERMINATED',
 }
 
 export interface Purchase {
@@ -77,7 +61,7 @@ export interface Purchase {
   invoiceId?: string;
   description?: string;
   language?: string;
-  purchaseTime?: Date;
+  purchaseTime?: string;
   orderId?: string;
   amountLabel?: string;
   amount?: number;
@@ -90,40 +74,35 @@ export interface Purchase {
 
 // Покупка продукта
 
-export interface PaymentResult {
-  successInvoice?: SuccessInvoice;
-  invalidInvoice?: InvalidInvoice;
-  successPurchase?: SuccessPurchase;
-  invalidPurchase?: InvalidPurchase;
+export enum PaymentResultType {
+  SUCCESS = 'SUCCESS',
+  CANCELLED = 'CANCELLED',
+  FAILURE = 'FAILURE',
 }
 
-export enum PaymentFinishCode {
-  SUCCESSFUL_PAYMENT = 'SUCCESSFUL_PAYMENT',
-  CLOSED_BY_USER = 'CLOSED_BY_USER',
-  UNHANDLED_FORM_ERROR = 'UNHANDLED_FORM_ERROR',
-  PAYMENT_TIMEOUT = 'PAYMENT_TIMEOUT',
-  DECLINED_BY_SERVER = 'DECLINED_BY_SERVER',
-  RESULT_UNKNOWN = 'RESULT_UNKNOWN',
-}
-
-export interface SuccessInvoice {
-  invoiceId: string;
-  finishCode: PaymentFinishCode;
-}
-
-export interface InvalidInvoice {
+export interface SuccessPaymentResult {
+  orderId?: string;
+  purchaseId?: string;
+  productId?: string;
   invoiceId?: string;
+  subscriptionToken?: string;
 }
 
-export interface SuccessPurchase {
-  finishCode: PaymentFinishCode;
-  orderId: string;
-  purchaseId: string;
-  productId: string;
-  subscriptionToken?: string | null;
+export interface SuccessPayment {
+  type: PaymentResultType.SUCCESS;
+  result: SuccessPaymentResult;
 }
 
-export interface InvalidPurchase {
+export interface CancelledPaymentResult {
+  purchaseId?: string;
+}
+
+export interface CancelledPayment {
+  type: PaymentResultType.CANCELLED;
+  result: CancelledPaymentResult;
+}
+
+export interface FailurePaymentResult {
   purchaseId?: string;
   invoiceId?: string;
   orderId?: string;
@@ -132,30 +111,7 @@ export interface InvalidPurchase {
   errorCode?: number;
 }
 
-// Потребление (подтверждение) покупки
-
-export interface PurchaseResponse {
-  code: number;
-  errorMessage?: string;
-  errorDescription?: string;
-  traceId?: string;
-  errors?: Array<DigitalShopGeneralError>;
+export interface FailurePayment {
+  type: PaymentResultType.FAILURE;
+  result: FailurePaymentResult;
 }
-
-export interface ConfirmPurchaseResponse extends PurchaseResponse {}
-
-// Удаление покупки
-
-export interface DeletePurchaseResponse extends PurchaseResponse {}
-
-// Исключения
-
-export interface RuStoreException {
-  message: string;
-}
-
-export interface RuStoreNotInstalledException extends RuStoreException {}
-export interface RuStoreOutdatedException extends RuStoreException {}
-export interface RuStoreUserUnauthorizedException extends RuStoreException {}
-export interface RuStoreApplicationBannedException extends RuStoreException {}
-export interface RuStoreUserBannedException extends RuStoreException {}

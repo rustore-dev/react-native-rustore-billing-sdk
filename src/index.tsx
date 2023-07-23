@@ -1,11 +1,10 @@
 import { NativeModules } from 'react-native';
 import type {
-  PaymentResult,
+  CancelledPayment,
+  FailurePayment,
   Product,
-  InvalidPurchase,
   Purchase,
-  ConfirmPurchaseResponse,
-  DeletePurchaseResponse,
+  SuccessPayment,
 } from './types';
 
 interface RustoreBillingModule {
@@ -20,7 +19,7 @@ interface RustoreBillingModule {
     /**
      * Схема deeplink, необходимая для возврата в ваше приложение после оплаты через стороннее приложение (например, SberPay или СБП). SDK генерирует свой хост к данной схеме.
      */
-    deeplinkScheme?: string;
+    deeplinkScheme: string;
   }) => void;
   checkPurchasesAvailability: () => Promise<Boolean | string>;
   getProducts: (productIds: string[]) => Promise<Product[]>;
@@ -43,7 +42,7 @@ interface RustoreBillingModule {
      * Дополнительная информация от разработчика AnyApp (опционально)
      */
     developerPayload?: string;
-  }) => Promise<PaymentResult | InvalidPurchase>;
+  }) => Promise<SuccessPayment | CancelledPayment | FailurePayment>;
   confirmPurchase: (params: {
     /**
      * Идентификатор покупки
@@ -53,11 +52,13 @@ interface RustoreBillingModule {
      * Указанная разработчиком строка, содержащая дополнительную информацию о заказе (опционально)
      */
     developerPayload?: string;
-  }) => Promise<ConfirmPurchaseResponse>;
-  deletePurchase: (purchaseId: string) => Promise<DeletePurchaseResponse>;
+  }) => Promise<Boolean>;
+  deletePurchase: (purchaseId: string) => Promise<Boolean>;
 }
 
 /**
  * RuStore SDK для in-app платежей
  */
 export default NativeModules.RustoreBilling as RustoreBillingModule;
+
+export * from './types';
