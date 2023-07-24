@@ -81,10 +81,10 @@ export enum PaymentResultType {
 }
 
 export interface SuccessPaymentResult {
-  orderId?: string;
-  purchaseId?: string;
-  productId?: string;
-  invoiceId?: string;
+  orderId: string;
+  purchaseId: string;
+  productId: string;
+  invoiceId: string;
   subscriptionToken?: string;
 }
 
@@ -94,7 +94,7 @@ export interface SuccessPayment {
 }
 
 export interface CancelledPaymentResult {
-  purchaseId?: string;
+  purchaseId: string;
 }
 
 export interface CancelledPayment {
@@ -103,12 +103,12 @@ export interface CancelledPayment {
 }
 
 export interface FailurePaymentResult {
-  purchaseId?: string;
-  invoiceId?: string;
-  orderId?: string;
-  quantity?: number;
-  productId?: string;
-  errorCode?: number;
+  purchaseId: string;
+  invoiceId: string;
+  orderId: string;
+  quantity: number;
+  productId: string;
+  errorCode: number;
 }
 
 export interface FailurePayment {

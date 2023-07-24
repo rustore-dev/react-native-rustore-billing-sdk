@@ -126,7 +126,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
         result.pushMap(item)
       }
 
-      promise.resolve(purchases)
+      promise.resolve(result)
     } catch (throwable: Throwable) {
       promise.reject(throwable)
     }
