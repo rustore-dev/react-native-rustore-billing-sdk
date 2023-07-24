@@ -114,12 +114,12 @@ export default function App() {
     await RustoreBillingClient.confirmPurchase({
       purchaseId,
     });
-    ToastAndroid.show('Покупка подтверждена', ToastAndroid.LONG);
+    ToastAndroid.show(`Покупка ${purchaseId} подтверждена`, ToastAndroid.LONG);
   };
 
   const deletePurchase = async (purchaseId: string) => {
     await RustoreBillingClient.deletePurchase(purchaseId);
-    ToastAndroid.show('Покупка отменена', ToastAndroid.LONG);
+    ToastAndroid.show(`Покупка ${purchaseId} отменена`, ToastAndroid.LONG);
   };
 
   if (isLoading) {
@@ -150,8 +150,15 @@ export default function App() {
   return (
     <ScrollView>
       {products.map((product) => (
-        <TouchableOpacity onPress={handlePurchase(product)}>
-          <Text>{JSON.stringify(product)}</Text>
+        <TouchableOpacity
+          key={product.productId}
+          style={styles.item}
+          onPress={handlePurchase(product)}
+        >
+          <Text style={styles.itemTitle}>
+            {product.productId} - {product.title}
+          </Text>
+          <Text>{product.description}</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
@@ -164,9 +171,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
+  item: {
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    padding: 16,
+  },
+  itemTitle: {
+    color: '#000',
+    fontWeight: '500',
   },
 });

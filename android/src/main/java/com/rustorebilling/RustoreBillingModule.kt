@@ -14,11 +14,6 @@ import ru.rustore.sdk.billingclient.model.product.SubscriptionPeriod
 import ru.rustore.sdk.billingclient.model.purchase.PaymentResult
 import ru.rustore.sdk.billingclient.model.purchase.Purchase
 import ru.rustore.sdk.core.feature.model.FeatureAvailabilityResult
-import kotlin.String
-import kotlin.Throwable
-import kotlin.apply
-import kotlin.let
-import kotlin.toString
 
 
 class RustoreBillingModule(reactContext: ReactApplicationContext) :
@@ -147,7 +142,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
   fun purchaseProduct(params: ReadableMap, promise: Promise) {
     val productId = params.getString("productId")!!
     val orderId = params.getString("orderId")
-    val quantity = params.getInt("quantity")
+    val quantity = if (params.hasKey("quantity")) params.getInt("quantity") else null
     val developerPayload = params.getString("developerPayload")
 
     try {
