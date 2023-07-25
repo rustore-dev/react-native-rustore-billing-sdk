@@ -38,7 +38,7 @@ npm install react-native-rustore-billing
 </activity>
 ```
 где "yourappscheme" - схема вашего deeplink, может быть изменена на другую.
-Эта схема должна совпадать со схемой, передаваемым в методе `initialize()`.
+Эта схема должна совпадать со схемой, передаваемым в методе `RustoreBillingClient.initialize()`.
 
 ## Инициализация
 Перед вызовом методов библиотеки необходимо выполнить ее инициализацию. Для инициализации вызовете метод `RustoreBillingClient.initialize()`:
@@ -79,11 +79,11 @@ try {
 ## Работа с продуктами
 
 ### Получение списка продуктов
-Для получения продуктов необходимо использовать метод `RustoreBillingClient.getProducts(ids)`:
+Для получения продуктов необходимо использовать метод `RustoreBillingClient.getProducts(productIds)`:
 
 ```ts
 try {
-  const products = await RustoreBillingClient.getProducts(ids);
+  const products = await RustoreBillingClient.getProducts(productIds);
   for (const product of products) {
     console.log(product?.productId);
   }
@@ -91,9 +91,9 @@ try {
   console.log(`products err: ${err}`);
 }
 ```
-- `ids` - список идентификаторов продуктов.
+- `productIds` - список идентификаторов продуктов.
 
-Метод возвращает `Product[]`:
+Метод возвращает список продуктов `Product[]`. Ниже представлена модель продукта:
 ```ts
 interface Product {
     productId: string;
@@ -123,7 +123,7 @@ interface Product {
 - `promoImageUrl` - ссылка на промо картинку.
 - `subscription` - описание подписки, возвращается только для продуктов с типом subscription.
 
-Интерфейс подписки `Subscription`:
+Структура подписки `Subscription`:
 ```ts
 interface ProductSubscription {
   subscriptionPeriod?: SubscriptionPeriod;
@@ -167,25 +167,30 @@ try {
 }
 ```
 
-Метод возвращает `Purchase[]`:
+Метод возвращает список покупок `Purchase[]`. Ниже представлена модель покупки:
 ```ts
 interface Purchase {
-    purchaseId?: string;
-    productId?: string;
-    description?: string;
-    language?: string;
-    purchaseTime?: string;
-    orderId?: string;
-    amountLabel?: string;
-    amount?: number;
-    currency?: string;
-    quantity?: number;
-    purchaseState?: string;
-    developerPayload?: string;
+  purchaseId?: string;
+  productId: string;
+  productType?: ProductType;
+  invoiceId?: string;
+  description?: string;
+  language?: string;
+  purchaseTime?: string;
+  orderId?: string;
+  amountLabel?: string;
+  amount?: number;
+  currency?: string;
+  quantity?: number;
+  purchaseState?: PurchaseState;
+  developerPayload?: string;
+  subscriptionToken?: string;
 }
 ```
 - `purchaseId` - идентификатор покупки.
 - `productId` - идентификатор продукта.
+- `productType` - тип продукта.
+- `invoiceId` - идентификатор счета.
 - `description` - описание покупки.
 - `language` - язык, указанный с помощью BCP 47 кодирования.
 - `purchaseTime` - время покупки (в формате RFC 3339).
@@ -202,11 +207,12 @@ interface Purchase {
   - `CANCELLED` - покупка отменена.
   - `CONSUMED` - потребление покупки подтверждено.
   - `CLOSED` - подписка была отменена.
-  - `TERMINATED` - подписка больше не существует.
+  - `TERMINATED` - подписка завершена.
 - `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию о заказе.
+- `subscriptionToken` - токен для валидации покупки на сервере.
 
 ### Получение конкретной покупки
-Для получения конкретной покупки необходимо использовать метод `RustoreBillingClient.getPurchaseInfo(id)`:
+Для получения конкретной покупки необходимо использовать метод `RustoreBillingClient.getPurchaseInfo(purchaseId)`:
 ```ts
 try {
   const purchase = await RustoreBillingClient.getPurchaseInfo('purchaseId');
@@ -215,8 +221,9 @@ try {
   console.log(`purchase err: ${err}`);
 }
 ```
+- `purchaseId` - идентификатор покупки.
 
-Метод возвращает `Purchase`, который описан выше.
+Метод возвращает `Purchase`, интерфейс которой описан выше.
 
 ### Покупка продукта
 Для вызова покупки продукта используйте метод `RustoreBillingClient.purchaseProduct({...})`:
@@ -234,13 +241,13 @@ try {
 }
 ```
 - `productId` - идентификатор продукта.
-- `orderId` - идентификатор заказа.
-- `quantity` - количество продуктов.
-- `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию.
+- `orderId` - идентификатор заказа, создаётся на стороне AnyApp (опционально. Если не указан, то генерируется автоматически).
+- `quantity` - количество продуктов (опционально).
+- `developerPayload` - дополнительная информация от разработчика AnyApp (опционально).
 
-Интерфейсы результата покупки могут быть `SuccessPayment`, `CancelledPayment` или `FailurePayment`:
+Результатом покупки может быть один из следующих интерфейсов: `SuccessPayment`, `CancelledPayment` или `FailurePayment`:
 ```ts
-enum PaymentResultType {
+enum PaymentResult {
   SUCCESS = 'SUCCESS',
   CANCELLED = 'CANCELLED',
   FAILURE = 'FAILURE',
@@ -248,23 +255,23 @@ enum PaymentResultType {
 
 interface SuccessPaymentResult {
   orderId?: string;
-  purchaseId?: string;
-  productId?: string;
-  invoiceId?: string;
+  purchaseId: string;
+  productId: string;
+  invoiceId: string;
   subscriptionToken?: string;
 }
 
 interface SuccessPayment {
-  type: PaymentResultType.SUCCESS;
+  type: PaymentResult.SUCCESS;
   result: SuccessPaymentResult;
 }
 
 interface CancelledPaymentResult {
-  purchaseId?: string;
+  purchaseId: string;
 }
 
 interface CancelledPayment {
-  type: PaymentResultType.CANCELLED;
+  type: PaymentResult.CANCELLED;
   result: CancelledPaymentResult;
 }
 
@@ -278,20 +285,21 @@ interface FailurePaymentResult {
 }
 
 interface FailurePayment {
-  type: PaymentResultType.FAILURE;
+  type: PaymentResult.FAILURE;
   result: FailurePaymentResult;
 }
 ```
 - `SuccessPayment` - результат успешного завершения покупки цифрового товара.
-- `CancelledPayment` - результат ошибки покупки цифрового товара.
-- `FailurePayment` - результат отмены покупки цифрового товара.
+- `FailurePayment` - результат ошибки покупки цифрового товара.
+- `CancelledPayment` - результат отмены покупки цифрового товара.
 
 ### Потребление (подтверждение) покупки
 RuStore содержит продукты следующих типов:
 - `CONSUMABLE` - потребляемый (можно купить много раз, например кристаллы в приложении).
 - `NON_CONSUMABLE` - непотребляемый (можно купить один раз, например отключение рекламы в приложении).
 - `SUBSCRIPTION` - подписка (можно купить на период времени, например подписка в стриминговом сервисе).
-  Потребления требуют только продукты типа CONSUMABLE, если они находятся в состоянии PurchaseState.PAID.
+
+Потребления требуют только продукты типа `CONSUMABLE`, если они находятся в состоянии `PurchaseState.PAID`.
 
 Для потребления покупки вы можете использовать метод `RustoreBillingClient.confirmPurchase({...})`:
 ```ts
@@ -306,24 +314,37 @@ try {
 }
 ```
 - `purchaseId` - идентификатор покупки.
-- `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию.
+- `developerPayload` - дополнительная информация от разработчика AnyApp (опционально).
 
 Если все условия выполняются, метод `RustoreBillingClient.confirmPurchase()` возвращает значение `true`.
 
 ### Отмена покупки
 
-Для отмены покупки вы можете использовать метод `RustoreBillingClient.deletePurchase(id)`:
+Для отмены покупки вы можете использовать метод `RustoreBillingClient.deletePurchase(purchaseId)`:
 ```ts
 try {
-  const isDeleted = await RustoreBillingClient.deletePurchase(id)
+  const isDeleted = await RustoreBillingClient.deletePurchase(purchaseId)
   console.log(`delete success: ${isDeleted}`);
 } catch (err) {
   console.log(`delete err: ${err}`);
 }
 ```
-- `id` - идентификатор покупки.
+- `purchaseId` - идентификатор покупки.
 
 Если все условия выполняются, метод `RustoreBillingClient.deletePurchase()` возвращает значение `true`.
+
+## Сценарий потребления и отмены покупки
+Обработка незавершённых платежей должна производиться разработчиком AnyApp.
+
+Метод отмены покупки (`deletePurchase`) необходимо использовать, если:
+
+- Метод получения списка покупок (`getPurchases`) вернул покупку со статусом:
+  - `PurchaseState.CREATED`.
+  - `PurchaseState.INVOICE_CREATED`.
+- Метод покупки (`purchaseProduct`) вернул `PaymentResult.Cancelled`.
+- Метод покупки (`purchaseProduct`) вернул `PaymentResult.Failure`.
+
+Метод потребления продукта (`confirmPurchase`) необходимо использовать, если метод получения списка покупок (`getPurchases`) вернул покупку типа `CONSUMABLE` и со статусом `PurchaseState.PAID`.
 
 ## Тестовые данные
 [Ссылка](https://securepayments.sberbank.ru/wiki/doku.php/test_cards) на тестовые банковские карты.

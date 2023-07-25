@@ -21,10 +21,25 @@ interface RustoreBillingModule {
      */
     deeplinkScheme: string;
   }) => void;
+  /**
+   * Метод проверки доступности работы с платежами
+   */
   checkPurchasesAvailability: () => Promise<Boolean | string>;
+  /**
+   * Метод получения списка продуктов
+   */
   getProducts: (productIds: string[]) => Promise<Product[]>;
+  /**
+   * Метод получения списка покупок
+   */
   getPurchases: () => Promise<Purchase[]>;
+  /**
+   * Метод получения информации о покупке
+   */
   getPurchaseInfo: (purchaseId: string) => Promise<Purchase>;
+  /**
+   * Метод для покупки продукта
+   */
   purchaseProduct: (params: {
     /**
      * Идентификатор продукта
@@ -43,6 +58,9 @@ interface RustoreBillingModule {
      */
     developerPayload?: string;
   }) => Promise<SuccessPayment | CancelledPayment | FailurePayment>;
+  /**
+   * Метод потребления (подтверждения) покупки
+   */
   confirmPurchase: (params: {
     /**
      * Идентификатор покупки
@@ -53,6 +71,9 @@ interface RustoreBillingModule {
      */
     developerPayload?: string;
   }) => Promise<Boolean>;
+  /**
+   * Метод для отмены покупки
+   */
   deletePurchase: (purchaseId: string) => Promise<Boolean>;
 }
 

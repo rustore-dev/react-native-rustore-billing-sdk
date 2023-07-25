@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import RustoreBillingClient, {
-  PaymentResultType,
+  PaymentResult,
   Product,
   PurchaseState,
 } from 'react-native-rustore-billing';
@@ -93,12 +93,12 @@ export default function App() {
         productId: product.productId,
       });
       switch (payment.type) {
-        case PaymentResultType.SUCCESS: {
+        case PaymentResult.SUCCESS: {
           await confirmPurchase(payment.result.purchaseId);
           break;
         }
-        case PaymentResultType.CANCELLED:
-        case PaymentResultType.FAILURE: {
+        case PaymentResult.CANCELLED:
+        case PaymentResult.FAILURE: {
           await deletePurchase(payment.result.purchaseId);
           break;
         }

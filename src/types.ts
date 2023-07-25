@@ -74,14 +74,14 @@ export interface Purchase {
 
 // Покупка продукта
 
-export enum PaymentResultType {
+export enum PaymentResult {
   SUCCESS = 'SUCCESS',
   CANCELLED = 'CANCELLED',
   FAILURE = 'FAILURE',
 }
 
 export interface SuccessPaymentResult {
-  orderId: string;
+  orderId?: string;
   purchaseId: string;
   productId: string;
   invoiceId: string;
@@ -89,7 +89,7 @@ export interface SuccessPaymentResult {
 }
 
 export interface SuccessPayment {
-  type: PaymentResultType.SUCCESS;
+  type: PaymentResult.SUCCESS;
   result: SuccessPaymentResult;
 }
 
@@ -98,20 +98,20 @@ export interface CancelledPaymentResult {
 }
 
 export interface CancelledPayment {
-  type: PaymentResultType.CANCELLED;
+  type: PaymentResult.CANCELLED;
   result: CancelledPaymentResult;
 }
 
 export interface FailurePaymentResult {
-  purchaseId: string;
-  invoiceId: string;
-  orderId: string;
-  quantity: number;
-  productId: string;
-  errorCode: number;
+  purchaseId?: string;
+  invoiceId?: string;
+  orderId?: string;
+  quantity?: number;
+  productId?: string;
+  errorCode?: number;
 }
 
 export interface FailurePayment {
-  type: PaymentResultType.FAILURE;
+  type: PaymentResult.FAILURE;
   result: FailurePaymentResult;
 }
