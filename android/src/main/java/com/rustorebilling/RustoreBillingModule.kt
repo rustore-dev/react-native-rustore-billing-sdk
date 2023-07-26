@@ -28,7 +28,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun initialize(params: ReadableMap) {
+  fun init(params: ReadableMap) {
     if (RuStoreBillingClientFactory.isSingletonInitialized) {
       return;
     }

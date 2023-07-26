@@ -11,7 +11,7 @@ interface RustoreBillingModule {
   /**
    * Метод инициализации RuStore SDK для in-app платежей
    */
-  initialize: (params: {
+  init: (params: {
     /**
      * Идентификатор приложения из консоли разработчика RuStore (пример: https://console.rustore.ru/apps/111111)
      */

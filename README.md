@@ -38,14 +38,14 @@ npm install react-native-rustore-billing
 </activity>
 ```
 где "yourappscheme" - схема вашего deeplink, может быть изменена на другую.
-Эта схема должна совпадать со схемой, передаваемым в методе `RustoreBillingClient.initialize()`.
+Эта схема должна совпадать со схемой, передаваемым в методе `RustoreBillingClient.init()`.
 
 ## Инициализация
-Перед вызовом методов библиотеки необходимо выполнить ее инициализацию. Для инициализации вызовете метод `RustoreBillingClient.initialize()`:
+Перед вызовом методов библиотеки необходимо выполнить ее инициализацию. Для инициализации вызовете метод `RustoreBillingClient.init()`:
 
 ```ts
 try {
-  RustoreBillingClient.initialize({
+  RustoreBillingClient.init({
     consoleApplicationId: 'appId',
     deeplinkScheme: 'scheme',
   });

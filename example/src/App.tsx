@@ -23,7 +23,7 @@ export default function App() {
 
   useEffect(() => {
     setLoading(true);
-    RustoreBillingClient.initialize({
+    RustoreBillingClient.init({
       consoleApplicationId: '183519',
       deeplinkScheme: 'reactnativesdkscheme',
     });
@@ -99,7 +99,7 @@ export default function App() {
         }
         case PaymentResult.CANCELLED:
         case PaymentResult.FAILURE: {
-          await deletePurchase(payment.result.purchaseId);
+          await deletePurchase(payment.result?.purchaseId ?? '');
           break;
         }
       }
