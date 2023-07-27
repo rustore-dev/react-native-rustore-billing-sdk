@@ -51,12 +51,18 @@ export default function App() {
     const fetchProducts = async () => {
       if (isAvailable) {
         try {
-          const availableProducts = ['productId1', 'productId2', 'productId3'];
+          const availableProducts = [
+            'SDK_sampleRN_con_280223_1',
+            'SDK_sampleRN_con_280223_2',
+            'SDK_sampleRN_non_con_280223_1',
+            'SDK_sampleRN_non_con_280223_2',
+          ];
           const products = await RustoreBillingClient.getProducts(
             availableProducts
           );
 
           const purchases = await RustoreBillingClient.getPurchases();
+
           for (const purchase of purchases) {
             switch (purchase.purchaseState) {
               case PurchaseState.CREATED:
@@ -158,7 +164,9 @@ export default function App() {
           <Text style={styles.itemTitle}>
             {product.productId} - {product.title}
           </Text>
-          <Text>{product.description}</Text>
+          <Text>
+            {product.priceLabel} {product.description}
+          </Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
