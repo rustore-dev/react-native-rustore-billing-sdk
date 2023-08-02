@@ -90,7 +90,7 @@ export interface SuccessPaymentResult {
 
 export interface SuccessPayment {
   type: PaymentResult.SUCCESS;
-  result: SuccessPaymentResult;
+  response: SuccessPaymentResult;
 }
 
 export interface CancelledPaymentResult {
@@ -99,7 +99,7 @@ export interface CancelledPaymentResult {
 
 export interface CancelledPayment {
   type: PaymentResult.CANCELLED;
-  result: CancelledPaymentResult;
+  response: CancelledPaymentResult;
 }
 
 export interface FailurePaymentResult {
@@ -113,5 +113,5 @@ export interface FailurePaymentResult {
 
 export interface FailurePayment {
   type: PaymentResult.FAILURE;
-  result: FailurePaymentResult;
+  response: FailurePaymentResult;
 }

@@ -267,7 +267,7 @@ interface SuccessPaymentResult {
 
 interface SuccessPayment {
   type: PaymentResult.SUCCESS;
-  result: SuccessPaymentResult;
+  response: SuccessPaymentResult;
 }
 
 interface CancelledPaymentResult {
@@ -276,7 +276,7 @@ interface CancelledPaymentResult {
 
 interface CancelledPayment {
   type: PaymentResult.CANCELLED;
-  result: CancelledPaymentResult;
+  response: CancelledPaymentResult;
 }
 
 interface FailurePaymentResult {
@@ -290,7 +290,7 @@ interface FailurePaymentResult {
 
 interface FailurePayment {
   type: PaymentResult.FAILURE;
-  result: FailurePaymentResult;
+  response: FailurePaymentResult;
 }
 ```
 - `SuccessPayment` - результат успешного завершения покупки цифрового товара.

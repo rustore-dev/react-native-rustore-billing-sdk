@@ -38,7 +38,7 @@ export default function App() {
           setAvailable(false);
           setError(response as string);
         }
-      } catch (err) {
+      } catch (err: any) {
         setError(JSON.stringify(err));
       } finally {
         setLoading(false);
@@ -82,7 +82,7 @@ export default function App() {
           }
 
           setProducts(products);
-        } catch (err) {
+        } catch (err: any) {
           setError(JSON.stringify(err));
         } finally {
           setLoading(false);
@@ -100,16 +100,17 @@ export default function App() {
       });
       switch (payment.type) {
         case PaymentResult.SUCCESS: {
-          await confirmPurchase(payment.result.purchaseId);
+          await confirmPurchase(payment.response.purchaseId);
           break;
         }
         case PaymentResult.CANCELLED:
         case PaymentResult.FAILURE: {
-          await deletePurchase(payment.result?.purchaseId ?? '');
+          await deletePurchase(payment.response?.purchaseId ?? '');
           break;
         }
       }
     } catch (err: any) {
+      console.log(err);
       setError(JSON.stringify(err));
     } finally {
       setLoading(false);
@@ -120,12 +121,15 @@ export default function App() {
     await RustoreBillingClient.confirmPurchase({
       purchaseId,
     });
-    ToastAndroid.show(`Покупка ${purchaseId} подтверждена`, ToastAndroid.LONG);
+    ToastAndroid.show(
+      `Подтверждение покупки: ${purchaseId}`,
+      ToastAndroid.LONG
+    );
   };
 
   const deletePurchase = async (purchaseId: string) => {
     await RustoreBillingClient.deletePurchase(purchaseId);
-    ToastAndroid.show(`Покупка ${purchaseId} отменена`, ToastAndroid.LONG);
+    ToastAndroid.show(`Отменена покупки: ${purchaseId}`, ToastAndroid.LONG);
   };
 
   if (isLoading) {
