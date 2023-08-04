@@ -46,32 +46,30 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun checkPurchasesAvailability(promise: Promise) {
-    try {
-      when (val availabilityResponse =
-        billingClient.purchases.checkPurchasesAvailability().await()) {
-        is FeatureAvailabilityResult.Available -> {
-          promise.resolve(true)
-        }
+    billingClient.purchases.checkPurchasesAvailability()
+      .addOnSuccessListener { availabilityResponse ->
+        when (availabilityResponse) {
+          is FeatureAvailabilityResult.Available -> {
+            promise.resolve(true)
+          }
 
-        is FeatureAvailabilityResult.Unavailable -> {
-          promise.resolve(availabilityResponse.cause.message)
+          is FeatureAvailabilityResult.Unavailable -> {
+            promise.resolve(availabilityResponse.cause.message)
+          }
         }
+      }.addOnFailureListener { throwable ->
+        promise.reject(throwable)
       }
-    } catch (throwable: Throwable) {
-      promise.reject(throwable)
-    }
   }
 
   @ReactMethod
   fun getProducts(productIds: ReadableArray, promise: Promise) {
-    try {
-      val ids = mutableListOf<String>()
-      for (index in 0 until productIds.size()) {
-        ids.add(productIds.getString(index))
-      }
+    val ids = mutableListOf<String>()
+    for (index in 0 until productIds.size()) {
+      ids.add(productIds.getString(index))
+    }
 
-      val products = billingClient.products.getProducts(ids).await()
-
+    billingClient.products.getProducts(ids).addOnSuccessListener { products ->
       val result = WritableNativeArray()
 
       for (product in products) {
@@ -107,35 +105,31 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
       }
 
       promise.resolve(result)
-    } catch (throwable: Throwable) {
+    }.addOnFailureListener { throwable ->
       promise.reject(throwable)
     }
   }
 
   @ReactMethod
   fun getPurchases(promise: Promise) {
-    try {
-      val purchases = billingClient.purchases.getPurchases().await()
-
+    billingClient.purchases.getPurchases().addOnSuccessListener { purchases ->
       val result = WritableNativeArray()
       for (purchase in purchases) {
         val item = parsePurchase(purchase)
         result.pushMap(item)
       }
-
       promise.resolve(result)
-    } catch (throwable: Throwable) {
+    }.addOnFailureListener { throwable ->
       promise.reject(throwable)
     }
   }
 
   @ReactMethod
   fun getPurchaseInfo(purchaseId: String, promise: Promise) {
-    try {
-      val purchase = billingClient.purchases.getPurchaseInfo(purchaseId).await()
+    billingClient.purchases.getPurchaseInfo(purchaseId).addOnSuccessListener { purchase ->
       val result = parsePurchase(purchase)
       promise.resolve(result)
-    } catch (throwable: Throwable) {
+    }.addOnFailureListener { throwable ->
       promise.reject(throwable)
     }
   }
@@ -213,22 +207,20 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
     val purchaseId = params.getString("purchaseId")!!
     val developerPayload = params.getString("developerPayload")
 
-    try {
-      billingClient.purchases.confirmPurchase(purchaseId, developerPayload).await()
+    billingClient.purchases.confirmPurchase(purchaseId, developerPayload).addOnSuccessListener {
       promise.resolve(true)
-    } catch (throwable: Throwable) {
+    }.addOnFailureListener { throwable ->
       promise.reject(throwable)
-    }
+    };
   }
 
   @ReactMethod
   fun deletePurchase(purchaseId: String, promise: Promise) {
-    try {
-      billingClient.purchases.deletePurchase(purchaseId).await()
+    billingClient.purchases.deletePurchase(purchaseId).addOnSuccessListener {
       promise.resolve(true)
-    } catch (throwable: Throwable) {
+    }.addOnFailureListener { throwable ->
       promise.reject(throwable)
-    }
+    };
   }
 
   private fun parsePeriod(period: SubscriptionPeriod?): WritableNativeMap? {
