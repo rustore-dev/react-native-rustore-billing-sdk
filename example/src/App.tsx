@@ -33,7 +33,7 @@ export default function App() {
     setLoading(true);
     RustoreBillingClient.init({
       consoleApplicationId: '183519',
-      deeplinkScheme: 'reactnativesdkscheme',
+      deeplinkScheme: 'yourappscheme://iamback',
     });
 
     const checkAvailability = async () => {
