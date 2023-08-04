@@ -47,10 +47,12 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
   @ReactMethod
   fun checkPurchasesAvailability(promise: Promise) {
     try {
-      when (val availabilityResponse = billingClient.purchases.checkPurchasesAvailability().await()) {
+      when (val availabilityResponse =
+        billingClient.purchases.checkPurchasesAvailability().await()) {
         is FeatureAvailabilityResult.Available -> {
           promise.resolve(true)
         }
+
         is FeatureAvailabilityResult.Unavailable -> {
           promise.resolve(availabilityResponse.cause.message)
         }
@@ -145,61 +147,65 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
     val quantity = if (params.hasKey("quantity")) params.getInt("quantity") else null
     val developerPayload = params.getString("developerPayload")
 
-    try {
-      when (val paymentResult = billingClient.purchases.purchaseProduct(productId, orderId, quantity, developerPayload).await()) {
-        is PaymentResult.Success -> {
-          val response = WritableNativeMap().apply {
-            putString("productId", paymentResult.productId)
-            putString("purchaseId", paymentResult.purchaseId)
-            putString("orderId", paymentResult.orderId)
-            putString("invoiceId", paymentResult.invoiceId)
-            putString("subscriptionToken", paymentResult.subscriptionToken)
+    billingClient.purchases.purchaseProduct(productId, orderId, quantity, developerPayload)
+      .addOnSuccessListener { paymentResult ->
+        when (paymentResult) {
+          is PaymentResult.Success -> {
+            val response = WritableNativeMap().apply {
+              putString("productId", paymentResult.productId)
+              putString("purchaseId", paymentResult.purchaseId)
+              putString("orderId", paymentResult.orderId)
+              putString("invoiceId", paymentResult.invoiceId)
+              putString("subscriptionToken", paymentResult.subscriptionToken)
+            }
+
+            val result = WritableNativeMap().apply {
+              putString("type", "SUCCESS")
+              putMap("response", response)
+            }
+
+            promise.resolve(result)
           }
 
-          val result = WritableNativeMap().apply {
-            putString("type", "SUCCESS")
-            putMap("response", response)
+          is PaymentResult.Cancelled -> {
+            val response = WritableNativeMap().apply {
+              putString("purchaseId", paymentResult.purchaseId)
+            }
+
+            val result = WritableNativeMap().apply {
+              putString("type", "CANCELLED")
+              putMap("response", response)
+            }
+
+            promise.resolve(result)
           }
 
-          promise.resolve(result)
+          is PaymentResult.Failure -> {
+            val response = WritableNativeMap().apply {
+              putString("productId", paymentResult.productId)
+              putString("purchaseId", paymentResult.purchaseId)
+              putString("orderId", paymentResult.orderId)
+              putString("invoiceId", paymentResult.invoiceId)
+              paymentResult.errorCode?.let { putInt("errorCode", it) }
+              paymentResult.quantity?.let { putInt("quantity", it) }
+            }
+
+            val result = WritableNativeMap().apply {
+              putString("type", "FAILURE")
+              putMap("response", response)
+            }
+
+            promise.resolve(result)
+          }
+
+          is PaymentResult.InvalidPaymentState -> {
+            val throwable = Throwable(message = paymentResult.toString())
+            promise.reject(throwable)
+          }
         }
-        is PaymentResult.Cancelled -> {
-          val response = WritableNativeMap().apply {
-            putString("purchaseId", paymentResult.purchaseId)
-          }
-
-          val result = WritableNativeMap().apply {
-            putString("type", "CANCELLED")
-            putMap("response", response)
-          }
-
-          promise.resolve(result)
-        }
-        is PaymentResult.Failure -> {
-          val response = WritableNativeMap().apply {
-            putString("productId", paymentResult.productId)
-            putString("purchaseId", paymentResult.purchaseId)
-            putString("orderId", paymentResult.orderId)
-            putString("invoiceId", paymentResult.invoiceId)
-            paymentResult.errorCode?.let { putInt("errorCode", it) }
-            paymentResult.quantity?.let { putInt("quantity", it) }
-          }
-
-          val result = WritableNativeMap().apply {
-            putString("type", "FAILURE")
-            putMap("response", response)
-          }
-
-          promise.resolve(result)
-        }
-        is PaymentResult.InvalidPaymentState -> {
-          val throwable = Throwable(message = paymentResult.toString())
-          promise.reject(throwable)
-        }
-      }
-    } catch (throwable: Throwable) {
-      promise.reject(throwable)
-    }
+      }.addOnFailureListener { throwable ->
+        promise.reject(throwable)
+      };
   }
 
   @ReactMethod

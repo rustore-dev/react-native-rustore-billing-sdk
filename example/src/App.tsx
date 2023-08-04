@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   ActivityIndicator,
@@ -10,9 +10,13 @@ import {
   View,
 } from 'react-native';
 import RustoreBillingClient, {
+  CancelledPayment,
+  FailurePayment,
   PaymentResult,
   Product,
+  Purchase,
   PurchaseState,
+  SuccessPayment,
 } from 'react-native-rustore-billing';
 
 export default function App() {
@@ -20,6 +24,10 @@ export default function App() {
   const [isAvailable, setAvailable] = useState(false);
   const [error, setError] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [payment, setPayment] = useState<
+    SuccessPayment | CancelledPayment | FailurePayment
+  >();
 
   useEffect(() => {
     setLoading(true);
@@ -47,70 +55,55 @@ export default function App() {
     checkAvailability();
   }, []);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (isAvailable) {
-        try {
-          const availableProducts = [
-            'SDK_sampleRN_con_280223_1',
-            'SDK_sampleRN_con_280223_2',
-            'SDK_sampleRN_non_con_280223_1',
-            'SDK_sampleRN_non_con_280223_2',
-          ];
-          const products = await RustoreBillingClient.getProducts(
-            availableProducts
-          );
-
-          const purchases = await RustoreBillingClient.getPurchases();
-
-          for (const purchase of purchases) {
-            switch (purchase.purchaseState) {
-              case PurchaseState.CREATED:
-              case PurchaseState.INVOICE_CREATED: {
-                if (purchase.purchaseId) {
-                  await deletePurchase(purchase.purchaseId);
-                }
-                break;
-              }
-              case PurchaseState.PAID: {
-                if (purchase.purchaseId) {
-                  await confirmPurchase(purchase.purchaseId);
-                }
-                break;
-              }
-            }
-          }
-
-          setProducts(products);
-        } catch (err: any) {
-          setError(JSON.stringify(err));
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchProducts();
-  }, [isAvailable]);
-
-  const handlePurchase = (product: Product) => async () => {
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const payment = await RustoreBillingClient.purchaseProduct({
-        productId: product.productId,
-      });
-      switch (payment.type) {
-        case PaymentResult.SUCCESS: {
-          await confirmPurchase(payment.response.purchaseId);
-          break;
-        }
-        case PaymentResult.CANCELLED:
-        case PaymentResult.FAILURE: {
-          await deletePurchase(payment.response?.purchaseId ?? '');
-          break;
-        }
-      }
+      const availableProducts = [
+        'SDK_sampleRN_con_280223_1',
+        'SDK_sampleRN_con_280223_2',
+        'SDK_sampleRN_non_con_280223_1',
+        'SDK_sampleRN_non_con_280223_2',
+        'SDK_sampleRN_sub_280223_2',
+        'SDK_sampleRN_sub_280223_1',
+      ];
+      const products = await RustoreBillingClient.getProducts(
+        availableProducts
+      );
+
+      setProducts(products);
     } catch (err: any) {
-      console.log(err);
+      setError(JSON.stringify(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchPurchases = useCallback(async () => {
+    setLoading(true);
+    try {
+      const purchases = await RustoreBillingClient.getPurchases();
+      setPurchases(purchases);
+    } catch (err: any) {
+      setError(JSON.stringify(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAvailable) {
+      Promise.all([fetchProducts(), fetchPurchases()]);
+    }
+  }, [fetchProducts, fetchPurchases, isAvailable]);
+
+  const handlePurchase = async (productId: string) => {
+    setLoading(true);
+    try {
+      const payment = await RustoreBillingClient.purchaseProduct({
+        productId,
+      });
+      setPayment(payment);
+    } catch (err: any) {
       setError(JSON.stringify(err));
     } finally {
       setLoading(false);
@@ -118,18 +111,24 @@ export default function App() {
   };
 
   const confirmPurchase = async (purchaseId: string) => {
-    await RustoreBillingClient.confirmPurchase({
-      purchaseId,
-    });
-    ToastAndroid.show(
-      `Подтверждение покупки: ${purchaseId}`,
-      ToastAndroid.LONG
-    );
+    try {
+      await RustoreBillingClient.confirmPurchase({ purchaseId });
+      ToastAndroid.show(
+        `Подтверждение покупки: ${purchaseId}`,
+        ToastAndroid.LONG
+      );
+    } catch (err: any) {
+      setError(JSON.stringify(err));
+    }
   };
 
   const deletePurchase = async (purchaseId: string) => {
-    await RustoreBillingClient.deletePurchase(purchaseId);
-    ToastAndroid.show(`Отменена покупки: ${purchaseId}`, ToastAndroid.LONG);
+    try {
+      await RustoreBillingClient.deletePurchase(purchaseId);
+      ToastAndroid.show(`Отменена покупки: ${purchaseId}`, ToastAndroid.LONG);
+    } catch (err: any) {
+      setError(JSON.stringify(err));
+    }
   };
 
   if (isLoading) {
@@ -159,19 +158,64 @@ export default function App() {
 
   return (
     <ScrollView>
+      <TouchableOpacity onPress={() => fetchProducts()}>
+        <Text style={{ fontWeight: 'bold' }}>Reload products</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => fetchPurchases()}>
+        <Text style={{ fontWeight: 'bold' }}>Reload purchases</Text>
+      </TouchableOpacity>
+      <Text>Payment</Text>
+      {payment?.type === PaymentResult.SUCCESS && (
+        <Text>
+          (SUCCESS) Invoice: ${payment?.response?.invoiceId ?? '0'} | Purchase:
+          ${payment?.response?.purchaseId ?? '0'}
+        </Text>
+      )}
+      {payment?.type === PaymentResult.CANCELLED && (
+        <Text>
+          (CANCELLED) Purchase: ${payment?.response?.purchaseId ?? '0'}
+        </Text>
+      )}
+      {payment?.type === PaymentResult.FAILURE && (
+        <Text>
+          (FAILURE) Invoice: ${payment?.response?.invoiceId ?? '0'} | Purchase:
+          ${payment?.response?.purchaseId ?? '0'}
+        </Text>
+      )}
+      <Text>Products</Text>
       {products.map((product) => (
-        <TouchableOpacity
-          key={product.productId}
-          style={styles.item}
-          onPress={handlePurchase(product)}
-        >
+        <View key={product.productId} style={styles.item}>
           <Text style={styles.itemTitle}>
             {product.productId} - {product.title}
           </Text>
           <Text>
             {product.priceLabel} {product.description}
           </Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => handlePurchase(product.productId)}>
+            <Text style={{ fontWeight: 'bold' }}>Buy</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+      <Text>Purchases</Text>
+      {purchases.map((purchase) => (
+        <View key={purchase.purchaseId} style={styles.item}>
+          <Text style={styles.itemTitle}>{purchase.purchaseId}</Text>
+          <Text>
+            {purchase.purchaseState} - {purchase.description}
+          </Text>
+          {purchase.purchaseState === PurchaseState.PAID && (
+            <TouchableOpacity
+              onPress={() => confirmPurchase(purchase?.purchaseId ?? '')}
+            >
+              <Text style={{ fontWeight: 'bold' }}>Confirm</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={() => deletePurchase(purchase?.purchaseId ?? '')}
+          >
+            <Text style={{ fontWeight: 'bold' }}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       ))}
     </ScrollView>
   );
