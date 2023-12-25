@@ -2,6 +2,8 @@
 
 React Native RuStoreSDK для подключения платежей
 
+[Документация по платежам](https://www.rustore.ru/help/sdk/payments)
+
 ## Общее
 
 ### Пример реализации
