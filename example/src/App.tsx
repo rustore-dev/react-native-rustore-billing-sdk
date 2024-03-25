@@ -99,10 +99,11 @@ export default function App() {
   const handlePurchase = async (productId: string) => {
     setLoading(true);
     try {
-      const payment = await RustoreBillingClient.purchaseProduct({
+      const paymentResult = await RustoreBillingClient.purchaseProduct({
         productId,
       });
-      setPayment(payment);
+      setPayment(paymentResult);
+
     } catch (err: any) {
       setError(JSON.stringify(err));
     } finally {

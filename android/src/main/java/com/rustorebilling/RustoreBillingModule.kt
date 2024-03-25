@@ -8,6 +8,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
+import com.rustorebilling.utils.BillingClientThemeProviderImpl
 import ru.rustore.sdk.billingclient.RuStoreBillingClient
 import ru.rustore.sdk.billingclient.RuStoreBillingClientFactory
 import ru.rustore.sdk.billingclient.model.product.SubscriptionPeriod
@@ -39,6 +40,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
       context = reactApplicationContext,
       consoleApplicationId,
       deeplinkScheme,
+      themeProvider = BillingClientThemeProviderImpl(reactApplicationContext),
       externalPaymentLoggerFactory = { tag -> PaymentLogger(tag) },
       debugLogs = true,
     );
