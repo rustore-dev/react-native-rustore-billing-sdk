@@ -20,10 +20,10 @@ React Native RuStoreSDK для подключения платежей
 ## Подключение в проект
 ```sh
 // HTTPS
-npm install git+https://git@gitflic.ru:rustore/react-native-rustore-billing-sdk.git
+npm install git+https://gitflic.ru/project/rustore/react-native-rustore-billing-sdk.git
 
 // SSH
-npm install git+ssh://git@gitflic.ru:rustore/react-native-rustore-billing-sdk.git
+npm install git+ssh://gitflic.ru/project/rustore/react-native-rustore-billing-sdk.git
 ```
 
 ### Обработка deeplink
