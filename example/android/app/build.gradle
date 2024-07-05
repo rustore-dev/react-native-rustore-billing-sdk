@@ -112,7 +112,35 @@ android {
         }
     }
 }
+configurations.all {
+  resolutionStrategy {
+    componentSelection {
+      withModule('ru.rustore.sdk:billingclient') { selection ->
+        if (selection.candidate.version.contains("alpha")) {
+          println(selection.candidate.version)
+          selection.reject("known bad version")
+          println(selection.candidate.version + "2")
+        }
+      }
+    }
+  }
+}
 
+
+configurations.configureEach {
+  resolutionStrategy {
+    componentSelection {
+      all { ComponentSelection selection ->
+        // def dversion = selection.candidate.version
+        //  println(dversion + "version0")
+        if (selection.candidate.group == 'ru.rustore.sdk' &&
+          selection.candidate.module == 'billingclient') {
+          println( selection.candidate.version + "version0")
+        }
+      }
+    }
+  }
+}
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
