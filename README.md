@@ -180,7 +180,6 @@ interface Purchase {
   productId: string;
   productType?: ProductType;
   invoiceId?: string;
-  description?: string;
   language?: string;
   purchaseTime?: string;
   orderId?: string;
@@ -197,7 +196,6 @@ interface Purchase {
 - `productId` - идентификатор продукта.
 - `productType` - тип продукта.
 - `invoiceId` - идентификатор счета.
-- `description` - описание покупки.
 - `language` - язык, указанный с помощью BCP 47 кодирования.
 - `purchaseTime` - время покупки (в формате RFC 3339).
 - `orderId` - уникальный идентификатор оплаты, сформированный приложением (uuid).
@@ -206,14 +204,14 @@ interface Purchase {
 - `currency` - код валюты ISO 4217.
 - `quantity` - количество продукта.
 - `purchaseState` - состояние покупки.
-  - `CREATED` - создана.
-  - `INVOICE_CREATED` - создана, ожидает оплаты.
-  - `CONFIRMED` - подтверждена.
-  - `PAID` - оплачена.
-  - `CANCELLED` - покупка отменена.
+  - `CREATED` - покупка создана.
+  - `INVOICE_CREATED` - по покупке создан счёт, ожидает оплаты.
+  - `CONFIRMED` -  финальный статус, покупка подтверждена (для подписок и непотребляемых товаров). Средства отправлены разработчику. Повторная покупка товара блокируется магазином.
+  - `PAID` - только покупки потребляемого товара — промежуточный статус, средства на счёте покупателя зарезервированы. Покупка ожидает подтверждения от разработчика.
+  - `CANCELLED` - ппокупка отменена — оплата не была произведена или был совершен возврат средств покупателю (для подписок после возврата средств покупка не переходит в CANCELLED).
   - `CONSUMED` - потребление покупки подтверждено.
-  - `CLOSED` - подписка была отменена.
-  - `TERMINATED` - подписка завершена.
+  - `PAUSED` - пподписка перешла в HOLD период.
+  - `TERMINATED` -  подписка закрылась.
 - `developerPayload` - указанная разработчиком строка, содержащая дополнительную информацию о заказе.
 - `subscriptionToken` - токен для валидации покупки на сервере.
 
@@ -264,6 +262,7 @@ interface SuccessPaymentResult {
   purchaseId: string;
   productId: string;
   invoiceId: string;
+  sandbox: boolean;
   subscriptionToken?: string;
 }
 
@@ -274,6 +273,7 @@ interface SuccessPayment {
 
 interface CancelledPaymentResult {
   purchaseId: string;
+  sandbox: boolean;
 }
 
 interface CancelledPayment {
@@ -288,6 +288,7 @@ interface FailurePaymentResult {
   quantity?: number;
   productId?: string;
   errorCode?: number;
+  sandbox: boolean;
 }
 
 interface FailurePayment {

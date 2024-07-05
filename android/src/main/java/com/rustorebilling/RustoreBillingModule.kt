@@ -152,6 +152,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
               putString("purchaseId", paymentResult.purchaseId)
               putString("orderId", paymentResult.orderId)
               putString("invoiceId", paymentResult.invoiceId)
+              putBoolean("sandbox", paymentResult.sandbox)
               putString("subscriptionToken", paymentResult.subscriptionToken)
             }
 
@@ -166,6 +167,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
           is PaymentResult.Cancelled -> {
             val response = WritableNativeMap().apply {
               putString("purchaseId", paymentResult.purchaseId)
+              putBoolean("sandbox", paymentResult.sandbox)
             }
 
             val result = WritableNativeMap().apply {
@@ -182,6 +184,7 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
               putString("purchaseId", paymentResult.purchaseId)
               putString("orderId", paymentResult.orderId)
               putString("invoiceId", paymentResult.invoiceId)
+              putBoolean("sandbox", paymentResult.sandbox)
               paymentResult.errorCode?.let { putInt("errorCode", it) }
               paymentResult.quantity?.let { putInt("quantity", it) }
             }
@@ -245,7 +248,6 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
       putString("amountLabel", purchase.amountLabel)
       purchase.amount?.let { putInt("amount", it) }
       putString("currency", purchase.currency)
-      putString("description", purchase.description)
       putString("developerPayload", purchase.developerPayload)
       putString("language", purchase.language)
       putString("productType", purchase.productType.toString())

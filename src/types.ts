@@ -50,7 +50,7 @@ export enum PurchaseState {
   PAID = 'PAID',
   CANCELLED = 'CANCELLED',
   CONSUMED = 'CONSUMED',
-  CLOSED = 'CLOSED',
+  PAUSED = 'PAUSED',
   TERMINATED = 'TERMINATED',
 }
 
@@ -59,7 +59,6 @@ export interface Purchase {
   productId: string;
   productType?: ProductType;
   invoiceId?: string;
-  description?: string;
   language?: string;
   purchaseTime?: string;
   orderId?: string;
@@ -85,6 +84,7 @@ export interface SuccessPaymentResult {
   purchaseId: string;
   productId: string;
   invoiceId: string;
+  sandbox: boolean;
   subscriptionToken?: string;
 }
 
@@ -95,6 +95,7 @@ export interface SuccessPayment {
 
 export interface CancelledPaymentResult {
   purchaseId: string;
+  sandbox: boolean;
 }
 
 export interface CancelledPayment {
@@ -109,6 +110,7 @@ export interface FailurePaymentResult {
   quantity?: number;
   productId?: string;
   errorCode?: number;
+  sandbox: boolean;
 }
 
 export interface FailurePayment {

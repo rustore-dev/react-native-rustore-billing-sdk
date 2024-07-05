@@ -59,12 +59,8 @@ export default function App() {
     setLoading(true);
     try {
       const availableProducts = [
-        'SDK_sampleRN_con_280223_1',
-        'SDK_sampleRN_con_280223_2',
-        'SDK_sampleRN_non_con_280223_1',
-        'SDK_sampleRN_non_con_280223_2',
-        'SDK_sampleRN_sub_280223_2',
-        'SDK_sampleRN_sub_280223_1',
+          '1000_franklin_ver1',
+          '10_tomatoes_ver1'
       ];
       const products = await RustoreBillingClient.getProducts(
         availableProducts
@@ -202,7 +198,7 @@ export default function App() {
         <View key={purchase.purchaseId} style={styles.item}>
           <Text style={styles.itemTitle}>{purchase.purchaseId}</Text>
           <Text>
-            {purchase.purchaseState} - {purchase.description}
+            {purchase.purchaseState}
           </Text>
           {purchase.purchaseState === PurchaseState.PAID && (
             <TouchableOpacity
