@@ -76,43 +76,13 @@ rootProject.allprojects {
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
-configurations.all {
-  resolutionStrategy {
-    componentSelection {
-      withModule('ru.rustore.sdk:billingclient') { selection ->
-        if (selection.candidate.version.contains("alpha")) {
-          println(selection.candidate.version)
-          selection.reject("known bad version")
-          println(selection.candidate.version + "2")
-        }
-      }
-    }
-  }
-}
-
-
-configurations.configureEach {
-  resolutionStrategy {
-    componentSelection {
-      all { ComponentSelection selection ->
-        // def dversion = selection.candidate.version
-        //  println(dversion + "version0")
-        if (selection.candidate.group == 'ru.rustore.sdk' &&
-          selection.candidate.module == 'billingclient') {
-          println( selection.candidate.version + "version0")
-        }
-      }
-    }
-  }
-}
-
 dependencies {
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-  implementation "ru.rustore.sdk:billingclient:6.+"
+  implementation "ru.rustore.sdk:billingclient:6.0.0"
 }
 
 if (isNewArchitectureEnabled()) {
