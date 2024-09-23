@@ -15,6 +15,7 @@ import ru.rustore.sdk.billingclient.model.product.SubscriptionPeriod
 import ru.rustore.sdk.billingclient.model.purchase.PaymentResult
 import ru.rustore.sdk.billingclient.model.purchase.Purchase
 import ru.rustore.sdk.core.feature.model.FeatureAvailabilityResult
+import ru.rustore.sdk.core.util.RuStoreUtils
 
 
 class RustoreBillingModule(reactContext: ReactApplicationContext) :
@@ -226,6 +227,12 @@ class RustoreBillingModule(reactContext: ReactApplicationContext) :
     }.addOnFailureListener { throwable ->
       promise.reject(throwable)
     };
+  }
+
+  @ReactMethod
+  fun isRuStoreInstalled(promise: Promise) {
+    val isRuStoreInstalled = RuStoreUtils.isRuStoreInstalled(reactApplicationContext)
+    promise.resolve(isRuStoreInstalled)
   }
 
   private fun parsePeriod(period: SubscriptionPeriod?): WritableNativeMap? {

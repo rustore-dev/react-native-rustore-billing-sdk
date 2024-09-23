@@ -64,7 +64,7 @@ try {
 - `deeplinkScheme` - cхема deeplink, необходимая для возврата в ваше приложение после оплаты через стороннее приложение (например, SberPay или СБП). SDK генерирует свой хост к данной схеме.
 Важно, чтобы схема deeplink, передаваемая в deeplinkScheme, совпадала со схемой, указанной в AndroidManifest.xml в разделе "Обработка deeplink".
 
-## Проверка доступности работы с платежами
+### Проверка доступности работы с платежами
 Для проверки доступности платежей необходимы следующие условия:
 - На устройстве пользователя должен быть установлен RuStore.
 - RuStore должен поддерживать функциональность платежей.
@@ -79,6 +79,16 @@ try {
   console.log(`available success ${isAvailable}`);
 } catch (err) {
   console.log(`available error ${err}`);
+}
+```
+
+### Проверка установлен ли RuStore на устройстве
+
+```ts
+try {
+  const isRuStoreInstalled = await RustoreBillingClient.isRuStoreInstalled()
+} catch (err) => {
+  console.log(`isRuStoreInstalled error ${err}`);
 }
 ```
 
