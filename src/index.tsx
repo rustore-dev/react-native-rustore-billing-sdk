@@ -75,6 +75,10 @@ interface RustoreBillingModule {
    * Метод для отмены покупки
    */
   deletePurchase: (purchaseId: string) => Promise<Boolean>;
+    /**
+     * Метод для проверки установлен ли RuStore на устройстве
+     */
+  isRuStoreInstalled: () => Promise<Boolean>;
 }
 
 /**

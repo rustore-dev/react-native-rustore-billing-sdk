@@ -53,6 +53,7 @@ export default function App() {
       }
     };
     checkAvailability();
+    isRuStoreInstalled();
   }, []);
 
   const fetchProducts = useCallback(async () => {
@@ -125,6 +126,15 @@ export default function App() {
       ToastAndroid.show(`Отменена покупки: ${purchaseId}`, ToastAndroid.LONG);
     } catch (err: any) {
       setError(JSON.stringify(err));
+    }
+  };
+
+  const isRuStoreInstalled = async () => {
+    try {
+       const result = await RustoreBillingClient.isRuStoreInstalled()
+       ToastAndroid.show(`Установлен ли рустор: ${result}`, ToastAndroid.LONG);
+    } catch (error: any) {
+       setError(JSON.stringify(err));
     }
   };
 
